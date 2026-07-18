@@ -1,0 +1,14 @@
+services:
+  concert-notifier:
+    build: .
+    container_name: concert-notifier
+    restart: unless-stopped
+    volumes:
+      # config.yaml wordt read-only gemount; data/ is persistent voor de dedup-db.
+      - ./config.yaml:/app/config.yaml:ro
+      - ./data:/app/data
+    # Optioneel: secrets via env vars i.p.v. (of naast) config.yaml.
+    # environment:
+    #   - TICKETMASTER_API_KEY=${TICKETMASTER_API_KEY}
+    #   - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+    #   - BANDSINTOWN_APP_ID=${BANDSINTOWN_APP_ID}

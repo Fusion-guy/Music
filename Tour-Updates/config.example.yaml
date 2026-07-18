@@ -1,0 +1,40 @@
+# Kopieer dit bestand naar config.yaml en vul je eigen gegevens in.
+# config.yaml staat in .gitignore zodat je geen secrets commit.
+
+# Artiesten die je wilt volgen (moet overeenkomen met hoe Ticketmaster ze noemt,
+# gewoon de bandnaam is meestal genoeg).
+artists:
+  - "Avenged Sevenfold"
+  - "Korn"
+  - "Muse"
+
+# Landcodes om op te filteren (ISO 3166-1 alpha-2). Voeg gerust BE/DE toe
+# als je ook shows net over de grens wilt zien.
+countries:
+  - "NL"
+
+# Optioneel: alleen events binnen X km van deze stad (laat leeg voor heel het land).
+near_city: "Amsterdam"
+radius_km: 0   # bv. 50 voor een straal van 50 km rond near_city
+
+# Hoe vaak (in minuten) er gepolld wordt.
+poll_interval_minutes: 30
+
+# Discord webhook URL: Server Settings -> Integrations -> Webhooks -> New Webhook.
+discord_webhook_url: "https://discord.com/api/webhooks/JOUW_WEBHOOK_HIER"
+
+# Ticketmaster Discovery API key: gratis account op https://developer.ticketmaster.com/
+ticketmaster_api_key: "JOUW_TICKETMASTER_API_KEY"
+
+# Bandsintown is standaard uit (zie providers/bandsintown.py voor uitleg
+# waarom die tegenwoordig beperkt bruikbaar is). Zet op true + vul
+# bandsintown_app_id in als je toegang hebt.
+use_bandsintown: false
+bandsintown_app_id: ""
+
+# Stuur ook een (aparte) melding als een al-bekend event van status
+# verandert (bv. tickets live, of geannuleerd) of van prijs verandert.
+notify_on_change: true
+
+# Waar de SQLite-database met "al geziene events" wordt bewaard.
+db_path: "data/events.db"
