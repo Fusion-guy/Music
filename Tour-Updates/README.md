@@ -48,7 +48,7 @@ cp config.example.yaml config.yaml
 Vul in `config.yaml` je artiesten, `ticketmaster_api_key` en
 `discord_webhook_url` in.
 
-### 3. Draaien met Docker (aanbevolen)
+### 3.1 Draaien met Docker (aanbevolen)
 
 ```bash
 docker compose up -d --build
@@ -59,7 +59,7 @@ De container blijft draaien en pollt elke `poll_interval_minutes`
 (standaard 30) automatisch. De SQLite-database staat in `./data/`, dus
 die overleeft een herstart van de container.
 
-### 4. Of lokaal draaien zonder Docker
+### 3.2 Of lokaal draaien zonder Docker
 
 ```bash
 python -m venv venv
