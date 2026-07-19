@@ -101,23 +101,46 @@ def main():
 
     os.makedirs(os.path.dirname(cfg.db_path) or ".", exist_ok=True)
     store = EventStore(cfg.db_path)
-    providers = build_providers(cfg)
-
-    logger.info(
-        "Concert Notifier gestart. Artiesten: %s | Landen: %s | Interval: %s min | Providers: %s",
-        ", ".join(cfg.artists), ", ".join(cfg.countries), cfg.poll_interval_minutes,
-        ", ".join(p.name for p in providers),
-    )
 
     if args.once:
+        providers = build_providers(cfg)
+        logger.info(
+            "Concert Notifier gestart (eenmalig). Artiesten: %s | Landen: %s | Providers: %s",
+            ", ".join(cfg.artists), ", ".join(cfg.countries),
+            ", ".join(p.name for p in providers),
+        )
         run_once(cfg, providers, store)
         return
 
+    logger.info("Concert Notifier gestart in loop-modus (herleest config.yaml elke ronde).")
+
     while True:
+        # Config bij elke ronde opnieuw inlezen. Zo kun je artiesten
+        # toevoegen/verwijderen in config.yaml zonder de container te
+        # hoeven herstarten of herbouwen — de wijziging wordt automatisch
+        # meegenomen bij de eerstvolgende poll. Als het bestand tijdelijk
+        # ongeldig is (bv. midden in het bewerken), blijft de vorige
+        # geldige config gewoon actief in plaats van dat het script crasht.
+        try:
+            cfg = load_config(args.config)
+        except (FileNotFoundError, ValueError) as exc:
+            logger.error(
+                "Kon config.yaml niet herladen (%s) — ga verder met de vorige geldige config.", exc
+            )
+
+        providers = build_providers(cfg)
+
+        logger.info(
+            "Ronde start. Artiesten: %s | Landen: %s | Providers: %s",
+            ", ".join(cfg.artists), ", ".join(cfg.countries),
+            ", ".join(p.name for p in providers),
+        )
+
         try:
             run_once(cfg, providers, store)
         except Exception:
             logger.exception("Onverwachte fout in hoofdloop, probeer volgende ronde opnieuw.")
+
         time.sleep(cfg.poll_interval_minutes * 60)
 
 

@@ -75,6 +75,26 @@ via een externe cronjob te draaien in plaats van de ingebouwde loop):
 python main.py --once
 ```
 
+## Artiesten aanpassen (zonder herstart of rebuild)
+
+`config.yaml` wordt bij elke poll-ronde opnieuw ingelezen. Dat betekent:
+je past `artists` (of `countries`, `poll_interval_minutes`, etc.) aan in
+`config.yaml` op je host, slaat op, en bij de eerstvolgende ronde wordt
+dat automatisch meegenomen. Geen `docker compose restart` of
+`--build` nodig. Check de logs (`docker compose logs -f`) om te zien
+welke artiesten in de actieve ronde gebruikt worden.
+
+Let op: als je midden in het bewerken zit en het bestand tijdelijk
+ongeldige YAML bevat, logt het script een foutmelding en blijft
+gewoon draaien met de laatst geldige config, in plaats van te
+crashen.
+
+Wil je nóg actiever kunnen beheren, bijvoorbeeld via Discord zelf
+(`!addartist Metallica`)? Dat kan met een echte Discord-bot (i.p.v.
+alleen een webhook) die luistert naar commando's en `config.yaml`
+wegschrijft — laat het weten als je dat wilt, dat is een mooie
+volgende stap.
+
 ## Configuratie-opties (`config.yaml`)
 
 | Optie | Omschrijving |
