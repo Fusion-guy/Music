@@ -30,7 +30,22 @@ def load_config(path: str = "config.yaml") -> Config:
         )
 
     with open(path, "r", encoding="utf-8") as f:
-        raw = yaml.safe_load(f) or {}
+        try:
+            raw = yaml.safe_load(f) or {}
+        except yaml.YAMLError as exc:
+            # Dit ving voorheen NIET dezelfde except-clause in main.py als
+            # FileNotFoundError/ValueError, waardoor een kapotte config.yaml
+            # de hele container liet crashen i.p.v. netjes gelogd te worden.
+            raise ValueError(
+                f"config.yaml bevat ongeldige YAML-syntax: {exc}"
+            ) from exc
+
+    if not isinstance(raw, dict):
+        raise ValueError(
+            "config.yaml kon niet als een geldige structuur worden gelezen "
+            "(verwacht 'key: value' regels, geen losse tekst of lijst)."
+        )
+
 
     # Env vars overschrijven config.yaml, handig voor secrets in Docker.
     ticketmaster_key = os.environ.get("TICKETMASTER_API_KEY", raw.get("ticketmaster_api_key", ""))

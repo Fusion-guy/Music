@@ -93,16 +93,17 @@ def main():
     parser.add_argument("--once", action="store_true", help="Draai één keer en stop (geen loop).")
     args = parser.parse_args()
 
-    try:
-        cfg = load_config(args.config)
-    except (FileNotFoundError, ValueError) as exc:
-        logger.error(str(exc))
-        sys.exit(1)
-
-    os.makedirs(os.path.dirname(cfg.db_path) or ".", exist_ok=True)
-    store = EventStore(cfg.db_path)
-
     if args.once:
+        # Bij --once (handig voor testen/cron) juist snel falen met een
+        # duidelijke foutmelding, in plaats van te blijven wachten.
+        try:
+            cfg = load_config(args.config)
+        except (FileNotFoundError, ValueError) as exc:
+            logger.error(str(exc))
+            sys.exit(1)
+
+        os.makedirs(os.path.dirname(cfg.db_path) or ".", exist_ok=True)
+        store = EventStore(cfg.db_path)
         providers = build_providers(cfg)
         logger.info(
             "Concert Notifier gestart (eenmalig). Artiesten: %s | Landen: %s | Providers: %s",
@@ -111,6 +112,21 @@ def main():
         )
         run_once(cfg, providers, store)
         return
+
+    # Loop-modus: nooit hard crashen op een kapotte config.yaml, ook niet
+    # bij het allereerste opstarten. Zonder dit bleef de container met
+    # restart:unless-stopped eindeloos crash-loopen tegen dezelfde fout
+    # aan, in plaats van gewoon te wachten tot het bestand gefixed is.
+    cfg = None
+    while cfg is None:
+        try:
+            cfg = load_config(args.config)
+        except (FileNotFoundError, ValueError) as exc:
+            logger.error("Kon config.yaml niet inladen (%s) — probeer over 30s opnieuw.", exc)
+            time.sleep(30)
+
+    os.makedirs(os.path.dirname(cfg.db_path) or ".", exist_ok=True)
+    store = EventStore(cfg.db_path)
 
     logger.info("Concert Notifier gestart in loop-modus (herleest config.yaml elke ronde).")
 
